@@ -3,10 +3,11 @@ import ConverterService from "../services";
 
 
 const Converter = (props)=> {
+    const {valueMoney} = props;
     return(
         <div className="converter-right">
-            <h3>How our crypto converter works</h3>
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Exercitationem, iste.</p>
+            <h3>Want to try the app right now ?</h3>
+            <p>It is easy! Just enter the details below.</p>
             <form action="" className="form-converter">
                 <input type="number" pattern="\d [0-9]" required placeholder="Amount" onChange={props.onChangeInputValue.bind(this)}/>
                 <select name="" id="" onChange={props.onChangeSelectFrom.bind(this)}>
@@ -19,7 +20,7 @@ const Converter = (props)=> {
                     <option value="NZD">NZD</option>
                     <option value="JPY">JPY</option>
                 </select>
-                <input type="text" readOnly="readOnly" value={props.money}/>
+                <input type="text" readOnly="readOnly" value={valueMoney}/>
                 <select name="" id="" onChange={props.onChangeSelectTo.bind(this)}>
                     <option value="select">Select</option>
                     <option value="EUR">EUR</option>
@@ -40,39 +41,54 @@ const Converter = (props)=> {
 
 class ConverterContainer extends Component {
 
-    converter = new ConverterService()
+    converter = new ConverterService();
 
     state = {
         value: 0,
         money: 0,
         from: '',
         to: ''
-    }
+    };
 
     onChangeInputValue = (e) =>{
-        this.setState({value:e.target.value})
-    }
+        const valueAmount = Number(e.target.value);
+        if(valueAmount < 0)
+        {
+            return this.setState({value:valueAmount * (-1)})
+        }
+        this.setState({value:valueAmount})
+    };
 
     onChangeSelectFrom = (e) => {
-        this.setState({from:e.target.value})
-    }
+        const selectFrom = e.target.value;
+        if(selectFrom === 'select') return this.setState({from: ''});
+        this.setState({from:selectFrom})
+    };
 
     onChangeSelectTo = (e) => {
-        this.setState({to:e.target.value})
-    }
+        const selectTo = e.target.value;
+        if(selectTo === 'select') return this.setState({to: ''});
+        this.setState({to:selectTo})
+    };
 
     onClickConvert = (e) => {
-        e.preventDefault()
+        e.preventDefault();
         this.converter.getResource(this.state.from).then((body)=>{
-            const multiplier = body.rates[this.state.to]
-            const result = (this.state.value * multiplier).toFixed(3)
+            const multiplier = body.rates[this.state.to];
+            const result = (this.state.value * multiplier).toFixed(3);
+            if(this.state.from === this.state.to) return this.setState({money:this.state.value});
             this.setState({money:result})
         })
-    }
+    };
 
     render() {
         return(
-            <Converter money={this.state.money} onChangeInputValue={this.onChangeInputValue} onClickConvert={this.onClickConvert} onChangeSelectTo={this.onChangeSelectTo} onChangeSelectFrom={this.onChangeSelectFrom}/>
+            <Converter valueMoney={this.state.money}
+                       onChangeInputValue={this.onChangeInputValue}
+                       onClickConvert={this.onClickConvert}
+                       onChangeSelectTo={this.onChangeSelectTo}
+                       onChangeSelectFrom={this.onChangeSelectFrom}
+            />
         )
     }
 }
